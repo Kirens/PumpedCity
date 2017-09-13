@@ -15,4 +15,10 @@ www="\/www"
 wd=$(pwd | sed 's/\//\\\//g')$www
 
 # Substitute in nginx conf and export
-sed -e "s/{{WWW FOLDER}}/$wd/g" backend/nginx_conf | sed -e "s/{{APP ID}}/$value/g" > install/nginx
+sed -e "s/{{WWW FOLDER}}/$wd/g" backend/nginx_conf | sed -e "s/{{ACCESS TOKEN}}/$value/g" > install/nginx
+
+# Try to reload nginx if config is fine
+sudo nginx -t && sudo service nginx reload
+
+
+echo "Config assembled and server reloaded!"
