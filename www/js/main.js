@@ -1,19 +1,94 @@
 "use strict";
 
+/*
+ * __main.js__
+ * Main source file of _Pumped City_
+ * Author: Erik Nygren
+ *
+ * Contains snippets from the openstreetmap wiki contributors
+ * Found at: https://wiki.openstreetmap.org/wiki/OpenLayers_Marker_Example
+ */
+
+
 //// Global constants
 ////////////////////////////////////////////////////////////////
 const API_PATH = '/api/v1';
 const MAX_RESULTS = 5;
+const DEFAULT_ZOOM = 14;
+const DEFAULT_LAT = 57.708659;
+const DEFAULT_LON = 11.972188;
 
 const geoLoc = navigator.geolocation;
+
+
+
+let map, markers;
 
 
 
 //// Global function definitions
 ////////////////////////////////////////////////////////////////
 
+
+/// Shared
+////////////////////
+
+/**
+ * Listoperator limiting number of parkings to be listed based uppon distance
+ *
+ * @param   {Parking[]} parkings An array of parkings to be printed
+
+ * @returns {Parking[]}
+ */
+const filterMapParkings = parkings=>
+    parkings
+    // Sort by distance
+        .sort(( {Distance: d1}, {Distance: d2} )=>d1-d2)
+    // Pick first n results acording to upper bound
+        .slice(0,MAX_RESULTS);
+
+
+
+/// OpenLayers
+////////////////////
+
+/**
+ * Creates markers for a select group of the closest results in a given table
+ *
+ * @param {Int} lat The latitude
+ * @param {Int} lon The longitude
+
+ * @returns {Coordinate}
+ */
+const makeCoordinate = (lat, lon) =>
+    new OpenLayers.LonLat( lon, lat )
+          .transform(
+            new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+            map.getProjectionObject() // to Spherical Mercator Projection
+          );
+
+/**
+ * Creates markers for a select group of the closest results in a given table
+ *
+ * @param {Parking[]} parkings An array of parkings to be printed
+ */
+const addParkingMarker = parkings=>
+    filterMapParkings(parkings)
+    // Put markers at the parkings
+        .forEach(({Lat:lat, Long:lon})=>
+            markers.addMarker(new OpenLayers.Marker( makeCoordinate(lat, lon) ))
+          );
+
+
+
 /// Geolocation
 ////////////////////
+
+/**
+ * Simple wraper for the Web API `getCurrentPosition` with automatic retries
+ *
+ * @param {Int} [retries] How many atempts to be made, defaults to 1
+ */
 const getLocation = retries=>
     new Promise((resolve, reject)=>{
         const poll = ()=>geoLoc.getCurrentPosition(resolve, err=>{
@@ -28,9 +103,6 @@ const getLocation = retries=>
         // Start trying
         poll();
     });
-
-
-
 
 
 
@@ -95,17 +167,13 @@ const searchParkig = (location, lat, lon, rad)=>
     });
 
 /**
- * Appends select group of the closest results in a given table
+ * Appends select group of the closest parkings in a given table
  *
  * @param {HTMLTableElement} tbody    A tabel body that the results append to
  * @param {Parking[]}        parkings An array of parkings to be printed
  */
 const printParkingsToTable = (tbody, parkings)=>
-    parkings
-    // Sort by distance
-        .sort(( {Distance: d1}, {Distance: d2} )=>d2-d1)
-    // Pick first n results acording to upper bound
-        .slice(0,MAX_RESULTS)
+    filterMapParkings(parkings)
     // Put each in the table
         .forEach(({Distance:d, Spaces:s, Address:a})=>{
             //TODO: do this in a less hardcoded manner
@@ -159,7 +227,11 @@ addEventListener('load', ()=>{
 
     /** Given a result clears and updates the result table
       Is @see {@link clearParkings} prepended to @see {@link printParkings} */
-    const clearAndPrint = parkns=>{ clearParkings(); printParkings(parkns) };
+    const clearAndPrint = parkings=>{
+        clearParkings();
+        printParkings(parkings);
+        addParkingMarker(parkings);
+    };
 
 
 
@@ -174,20 +246,36 @@ addEventListener('load', ()=>{
             .then(clearAndPrint, showParkReqErr);
     });
 
+    /// OpenLayers
+    ////////////////////
+
+    // `map`and `markers` are already defined globally
+    map = new OpenLayers.Map("map");
+    map.addLayer(new OpenLayers.Layer.OSM());
+    markers = new OpenLayers.Layer.Markers( "Markers" );
+    map.addLayer(markers);
+
     /// Geolocation
     ////////////////////
     if(geoLoc) {
         getLocation(3)
-        // Set the values and dissable input
             .then(({coords:{latitude: lat, longitude: lon}})=>{
+                // Set the values and dissable input
                 PARK_QUERY.latitude .value = lat;
                 PARK_QUERY.longitude.value = lon;
 
                 PARK_QUERY.latitude .disabled = true;
                 PARK_QUERY.longitude.disabled = true;
+
+                // We also want to center the map around our coordinates
+                map.setCenter(makeCoordinate(lat, lon), DEFAULT_ZOOM);
               })
-        // Fallback is default, nothiing much to do on error
-            .catch(console.error);
+            // Fallback is default, nothing much to do on error
+            .catch(()=>{
+                // If we can't get our own coordinates, zoom to default
+                map.setCenter(makeCoordinate(DEFAULT_LAT, DEFAULT_LON)
+                              , DEFAULT_ZOOM);
+            });
     }
 
 });

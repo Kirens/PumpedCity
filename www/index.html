@@ -4,25 +4,31 @@
     <meta charset="utf-8">
     <title>Pumped City!</title>
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="style/main.css">
+    <script src="http://www.openlayers.org/api/OpenLayers.js" async></script>
     <script src="js/main.js" async></script>
 </head>
 <body>
-    <form id="parkings" action="/api/v1" method="GET">
-        Latitud:  <input type="number" name="latitude" value="57.7276899814905"><br>
-        Longitud: <input type="number" name="longitude" value="12.0054529046318"><br>
-        Avstånd:  <input type="number" name="radius" value="1000" min="0" max="5000"><br>
-        <input type="submit" value="Sök!">
-    </form>
+    <div id="map"></div>
 
-    <!-- RESULTS: -->
-    <table id="results">
-        <thead><tr>
-            <th>Avstånd</th>
-            <th>Lediga platser</th>
-            <th>Address</th>
-        </tr></thead>
-        <tbody></tbody>
-    </table>
+    <div id="querry_container">
+        <form id="parkings" action="https://400770.xyz/api/v1" method="GET">
+            Latitud:  <input type="number" name="latitude" value="57.708659"><br>
+            Longitud: <input type="number" name="longitude" value="11.972188"><br>
+            Avstånd:  <input type="number" name="radius" value="1000" min="0" max="5000"><br>
+            <input type="submit" value="Sök!">
+        </form>
+
+        <!-- RESULTS: -->
+        <table id="results">
+            <thead><tr>
+                <th>Avstånd</th>
+                <th>Lediga platser</th>
+                <th>Address</th>
+            </tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
 </body>
 </html>
