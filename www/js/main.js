@@ -80,9 +80,22 @@ const printParkingsToTable = (tbody, parkings)=>
     // Pick first n results acording to upper bound
         .slice(0,MAX_RESULTS)
     // Put each in the table
-        .forEach(parking=>{
-            //TODO: actually print the things
-            console.log(parking);
+        .forEach(({Distance:d, Spaces:s, Address:a})=>{
+            //TODO: do this in a less hardcoded manner
+            let row = document.createElement('tr');
+
+            // The following array decides in what order the elements are
+            // placed. In the HTML it is Distance, Spaces, Address at
+            // the moment
+            [d, s, a]
+            // Create a cell in row for teh elements
+                .forEach(value=>{
+                    let cell = document.createElement('td');
+                    cell.textContent = value;
+                    row.appendChild(cell);
+                  });
+
+            tbody.appendChild(row);
         });
 
 /**
