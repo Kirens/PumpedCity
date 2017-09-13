@@ -5,10 +5,37 @@
 const API_PATH = '/api/v1';
 const MAX_RESULTS = 5;
 
+const geoLoc = navigator.geolocation;
+
 
 
 //// Global function definitions
 ////////////////////////////////////////////////////////////////
+
+/// Geolocation
+////////////////////
+const getLocation = retries=>
+    new Promise((resolve, reject)=>{
+        const poll = ()=>geoLoc.getCurrentPosition(resolve, err=>{
+            // If user doesn't allow don't ask again.
+            if(err.code == err.PERMISSION_DENIED) reject(err);
+            // Stop retrying?
+            else if(retries-- < 0) reject(err);
+            // Retry otherwise
+            else setInterval(poll, 1000);
+        });
+
+        // Start trying
+        poll();
+    });
+
+
+
+
+
+
+/// API requests
+////////////////////
 /**
  * Prompts the user of an error
  *
@@ -119,6 +146,10 @@ addEventListener('load', ()=>{
     const RESULT_TABLE = document.getElementById('results').tBodies[0];
 
 
+    /// API requests
+    ////////////////////
+
+
     // Specify some functions with our table
 
     /** Curried print function @see {@link printParkingsToTable} */
@@ -143,6 +174,20 @@ addEventListener('load', ()=>{
             .then(clearAndPrint, showParkReqErr);
     });
 
+    /// Geolocation
+    ////////////////////
+    if(geoLoc) {
+        getLocation(3)
+        // Set the values and dissable input
+            .then(({coords:{latitude: lat, longitude: lon}})=>{
+                PARK_QUERY.latitude .value = lat;
+                PARK_QUERY.longitude.value = lon;
 
+                PARK_QUERY.latitude .disabled = true;
+                PARK_QUERY.longitude.disabled = true;
+              })
+        // Fallback is default, nothiing much to do on error
+            .catch(console.error);
+    }
 
 });
