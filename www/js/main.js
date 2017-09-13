@@ -52,6 +52,14 @@ const filterMapParkings = parkings=>
 /// OpenLayers
 ////////////////////
 
+/**
+ * Creates markers for a select group of the closest results in a given table
+ *
+ * @param {Int} lat The latitude
+ * @param {Int} lon The longitude
+
+ * @returns {Coordinate}
+ */
 const makeCoordinate = (lat, lon) =>
     new OpenLayers.LonLat( lon, lat )
           .transform(
@@ -59,6 +67,11 @@ const makeCoordinate = (lat, lon) =>
             map.getProjectionObject() // to Spherical Mercator Projection
           );
 
+/**
+ * Creates markers for a select group of the closest results in a given table
+ *
+ * @param {Parking[]} parkings An array of parkings to be printed
+ */
 const addParkingMarker = parkings=>
     filterMapParkings(parkings)
     // Put markers at the parkings
@@ -70,6 +83,12 @@ const addParkingMarker = parkings=>
 
 /// Geolocation
 ////////////////////
+
+/**
+ * Simple wraper for the Web API `getCurrentPosition` with automatic retries
+ *
+ * @param {Int} [retries] How many atempts to be made, defaults to 1
+ */
 const getLocation = retries=>
     new Promise((resolve, reject)=>{
         const poll = ()=>geoLoc.getCurrentPosition(resolve, err=>{
@@ -148,7 +167,7 @@ const searchParkig = (location, lat, lon, rad)=>
     });
 
 /**
- * Appends select group of the closest results in a given table
+ * Appends select group of the closest parkings in a given table
  *
  * @param {HTMLTableElement} tbody    A tabel body that the results append to
  * @param {Parking[]}        parkings An array of parkings to be printed
