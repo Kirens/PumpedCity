@@ -1,0 +1,5 @@
+# Ignore build specific files
+install/
+
+# We don't want the access token to be committed
+backend/credentials
