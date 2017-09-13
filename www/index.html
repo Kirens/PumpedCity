@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Pumped City!</title>
+
+    <link rel="stylesheet" type="text/css" href="style/main.css">
+    <script src="js/main.js" async></script>
+</head>
+<body>
+    <form id="parkings" action="/api/v1" method="GET">
+        Latitud:  <input type="number" name="latitude" value="57.7276899814905"><br>
+        Longitud: <input type="number" name="longitude" value="12.0054529046318"><br>
+        Avstånd:  <input type="number" name="radius" value="1000"><br>
+        <input type="submit" value="Sök!">
+    </form>
+
+    <!-- RESULTS: -->
+    <table id="results">
+        <thead><tr>
+            <tr>Avstånd</tr>
+            <tr>Lediga platser</tr>
+            <tr>Address</tr>
+        </tr></thead>
+        <tbody></tbody>
+    </table>
+</body>
+</html>
